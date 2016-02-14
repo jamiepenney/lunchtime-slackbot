@@ -27,6 +27,10 @@ var bot = controller.spawn({
   token: config.slackToken
 });
 
+//////////////////////
+/// Hello response ///
+//////////////////////
+
 controller.hears(["hello"],["direct_message","direct_mention", "mention"],function(bot,message) {
   // do something to respond to message
   // all of the fields available in a normal Slack message object are available
@@ -35,9 +39,58 @@ controller.hears(["hello"],["direct_message","direct_mention", "mention"],functi
     if(err){
       return;
     }
-    bot.reply(message,'Hello ' + user.realName);
+    bot.reply(message, 'Hello ' + user.realName);
+  });
+});
+
+///////////////////////
+/// Token Responses ///
+///////////////////////
+
+function tokenConversation(message) {
+  bot.startPrivateConversation(message, function(err, conversation){
+    conversation.say('Your current token is `XXXXXXX`');
+    conversation.ask('Would you like to change it?', [
+      {
+        pattern: bot.utterances.yes,
+        callback: function(response, convo) {
+          convo.say('Great! Your new token is `XXXXXX`');
+          convo.next();
+        }
+      },
+      {
+        default: true,
+        callback: function(response, convo){
+          convo.say('Never mind then...');
+          convo.next();
+        }
+      }
+    ])
+  });
+};
+
+controller.hears(["token"],["direct_mention", "mention"],function(bot,message) {
+  getUser(message.user, function(err, user){
+    if(err){
+      return;
+    }
+    bot.reply(message, 'Check your PMs ' + user.realName);
+    tokenConversation(message);
   })
 });
+
+controller.hears(["token"],["direct_message"],function(bot,message) {
+  getUser(message.user, function(err, user){
+    if(err){
+      return;
+    }
+    tokenConversation(message);
+  })
+});
+
+///////////////
+/// Exports ///
+///////////////
 
 module.exports = {
   start: function() {
