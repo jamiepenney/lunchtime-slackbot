@@ -1,6 +1,7 @@
 var SlackClient = require('slack-client');
 var config = require('./config')
 var token = require('./conversations/token');
+var vote = require('./conversations/vote');
 
 var slack = new SlackClient.WebClient(config.slackToken);
 
@@ -64,6 +65,29 @@ controller.hears(["token"],["direct_message"],function(bot,message) {
       return;
     }
     token.conversation(bot, user, message);
+  })
+});
+
+//////////////////////
+/// Vote Responses ///
+//////////////////////
+
+controller.hears(["vote"],["direct_mention", "mention"],function(bot,message) {
+  getUser(message.user, function(err, user){
+    if(err){
+      return;
+    }
+    bot.reply(message, 'Check your PMs for voting instructions ' + user.realName);
+    vote.conversation(bot, user, message, true);
+  })
+});
+
+controller.hears(["vote"],["direct_message"],function(bot,message) {
+  getUser(message.user, function(err, user){
+    if(err){
+      return;
+    }
+    vote.conversation(bot, user, message, true);
   })
 });
 
