@@ -1,7 +1,6 @@
 var SlackClient = require('slack-client');
 var config = require('./config')
-var db = require('./db');
-var tokens = require('./tokens')
+var token = require('./conversations/token');
 
 var slack = new SlackClient.WebClient(config.slackToken);
 
@@ -49,52 +48,13 @@ controller.hears(["hello"],["direct_message","direct_mention", "mention"],functi
 /// Token Responses ///
 ///////////////////////
 
-function tokenConversation(user, message) {
-  bot.startPrivateConversation(message, function(err, conversation){
-    db.getUser(user.name, function(err, lunchtimeUser){
-      if(err || !lunchtimeUser){
-        conversation.say("Sorry, I can't seem to find you in the lunchtime system.")
-        conversation.stop();
-        return;
-      }
-
-      conversation.say('Your current token is `' + lunchtimeUser.token + '`');
-      conversation.ask('Would you like to change it?', [
-        {
-          pattern: bot.utterances.yes,
-          callback: function(response, convo) {
-            var newToken = tokens.makeNewToken();
-
-            db.saveToken(lunchtimeUser, newToken, function(err){
-              if(err){
-                convo.say("Error: Couldn't save your new token!");
-                convo.next();
-                return;
-              }
-              convo.say('Great! Your new token is `' + newToken + '`');
-              convo.next();
-            })
-          }
-        },
-        {
-          default: true,
-          callback: function(response, convo){
-            convo.say('Never mind then...');
-            convo.next();
-          }
-        }
-      ])
-    })
-  });
-};
-
 controller.hears(["token"],["direct_mention", "mention"],function(bot,message) {
   getUser(message.user, function(err, user){
     if(err){
       return;
     }
     bot.reply(message, 'Check your PMs ' + user.realName);
-    tokenConversation(user, message);
+    token.conversation(bot, user, message);
   })
 });
 
@@ -103,7 +63,7 @@ controller.hears(["token"],["direct_message"],function(bot,message) {
     if(err){
       return;
     }
-    tokenConversation(user, message);
+    token.conversation(bot, user, message);
   })
 });
 
