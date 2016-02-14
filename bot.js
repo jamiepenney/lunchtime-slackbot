@@ -33,7 +33,7 @@ var bot = controller.spawn({
 /// Hello response ///
 //////////////////////
 
-controller.hears(["hello"],["direct_message","direct_mention", "mention"],function(bot,message) {
+controller.hears(["hello", "hi", "hey"],["direct_message","direct_mention", "mention"],function(bot,message) {
   // do something to respond to message
   // all of the fields available in a normal Slack message object are available
   // https://api.slack.com/events/message
@@ -41,7 +41,7 @@ controller.hears(["hello"],["direct_message","direct_mention", "mention"],functi
     if(err){
       return;
     }
-    bot.reply(message, 'Hello ' + user.realName);
+    bot.reply(message, 'Hello ' + (user.profile.real_name || user.name));
   });
 });
 
@@ -54,7 +54,7 @@ controller.hears(["token"],["direct_mention", "mention"],function(bot,message) {
     if(err){
       return;
     }
-    bot.reply(message, 'Check your PMs ' + user.realName);
+    bot.reply(message, 'Check your PMs ' + (user.profile.real_name || user.name));
     token.conversation(bot, user, message);
   })
 });
@@ -77,7 +77,7 @@ controller.hears(["vote"],["direct_mention", "mention"],function(bot,message) {
     if(err){
       return;
     }
-    bot.reply(message, 'Check your PMs for voting instructions ' + user.realName);
+    bot.reply(message, 'Check your PMs for voting instructions ' + (user.profile.real_name || user.name));
     vote.conversation(bot, user, message, true);
   })
 });
