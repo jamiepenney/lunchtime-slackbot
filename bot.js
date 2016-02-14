@@ -34,14 +34,32 @@ var bot = controller.spawn({
 //////////////////////
 
 controller.hears(["hello", "hi", "hey"],["direct_message","direct_mention", "mention"],function(bot,message) {
-  // do something to respond to message
-  // all of the fields available in a normal Slack message object are available
-  // https://api.slack.com/events/message
   getUser(message.user, function(err, user){
     if(err){
       return;
     }
     bot.reply(message, 'Hello ' + (user.profile.real_name || user.name));
+  });
+});
+
+/////////////////////
+/// Help response ///
+/////////////////////
+
+controller.hears(["help"],["direct_message","direct_mention", "mention"],function(bot,message) {
+  getUser(message.user, function(err, user){
+    if(err){
+      return;
+    }
+    bot.startConversation(message, function(err, conversation){
+      conversation.say('Hello ' + (user.profile.real_name || user.name));
+      conversation.say('I understand the following commands:');
+      conversation.say('`hello`: Says hello to you');
+      conversation.say('`token`: Sends you a private message with your token for voting on the website, and lets you change it');
+      conversation.say('`vote`: Starts the voting process');
+    });
+
+
   });
 });
 
