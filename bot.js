@@ -2,6 +2,7 @@ var SlackClient = require('slack-client');
 var config = require('./config')
 var token = require('./conversations/token');
 var vote = require('./conversations/vote');
+var db = require('./db');
 
 var slack = new SlackClient.WebClient(config.slackToken);
 
@@ -21,6 +22,10 @@ function getUser(userId, cb){
     }
     cb(err, user ? user.user : null);
   });
+}
+
+function randomResponse(responses){
+  return responses[Math.floor(Math.random() * responses.length)];
 }
 
 var Botkit = require('botkit');
@@ -58,7 +63,30 @@ controller.hears(["help"],["direct_message","direct_mention", "mention"],functio
       conversation.say('`token`: Sends you a private message with your token for voting on the website, and lets you change it');
       conversation.say('`vote`: Starts the voting process');
     });
+  });
+});
 
+///////////////////////
+/// Hungry response ///
+///////////////////////
+
+var notTodayResponses = ['Sorry friend not much I can do about that today!', "I'm sorry Dave, I'm afraid I can't do that", "Not today peeps"]
+
+controller.hears(["hungry", "lunch"],["direct_message","direct_mention", "mention"],function(bot,message) {
+  getUser(message.user, function(err, user){
+    if(err){
+      return;
+    }
+    db.getCurrentRound(function(err, current_round){
+      if(err) {
+        return;
+      }
+      if(current_round && current_round.winning_choice_id) {
+        bot.reply(message, randomResponse(notTodayResponses));
+      } else {
+        bot.reply(message, 'If you want to vote for lunch, just say vote');
+      }
+    })
 
   });
 });
