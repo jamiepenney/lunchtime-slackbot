@@ -143,9 +143,6 @@ controller.hears(["vote"],["direct_message"],function(bot,message) {
 
 module.exports = {
   start: function() {
-    // join the default slack channel
-    slack.channels.join(config.slackRoom);
-
     // Start the real time messaging listener
     bot.startRTM(function(err,bot,payload) {
       if (err) {
