@@ -9,6 +9,7 @@
     "escape-string-regexp": "^1.0.4",
     "pg": "^4.4.4",
     "raygun": "^0.8.5",
+    "request": "^2.69.0",
     "slack-client": "2.0.1"
   },
   "devDependencies": {},
