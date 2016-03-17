@@ -102,10 +102,12 @@ controller.hears(["hungry", "lunch"],["direct_message","direct_mention", "mentio
       } else if(message.text.indexOf("?") >= 0 && message.text.indexOf("what") >= 0) {
         db.getChoices(function(err, choices){
           var randomChoice = randomResponse(choices.map(function(c){ return c.name; }))
-          bot.reply(message, 'Tt could be ' + randomChoice + ', just say vote to pick something');
+          bot.reply(message, 'It could be ' + randomChoice + ', just say vote to pick something');
+          return;
         });
       } else {
         bot.reply(message, 'If you want to vote for lunch, just say vote');
+        return;
       }
     })
 
