@@ -62,6 +62,41 @@ controller.hears(["token"],["direct_message"],function(bot,message) {
 /// Vote Responses ///
 //////////////////////
 
+controller.hears(["random vote"],["direct_mention", "mention", "direct_message"],function(bot,message) {
+  getUser(message.user, function(err, user){
+    if(err){
+      return;
+    }
+    db.getUser(user.name, function(err, lunchtimeUser){
+      if(err || !lunchtimeUser) {
+        console.log(user, lunchtimeUser);
+        return;
+      }
+      db.getCurrentRound(function(err, current_round){
+        if(err) {
+          return;
+        }
+        if(current_round && current_round.winning_choice_id) {
+          bot.reply(message, randomResponse(notTodayResponses));
+        } else {
+          db.getChoices(function(err, choices){
+            var randomChoice = randomResponse(choices);
+            console.log(randomChoice);
+            db.makeVote(lunchtimeUser, randomChoice, function(err){
+              if(err)
+              {
+                bot.reply(message, 'Something went wrong... ' + err);
+              } else {
+                bot.reply(message, 'Your vote has been cast randomly for ' + randomChoice.name);
+              }
+            });
+          });
+        }
+      });
+    });
+  })
+});
+
 controller.hears(["vote"],["direct_mention", "mention"],function(bot,message) {
   getUser(message.user, function(err, user){
     if(err){
