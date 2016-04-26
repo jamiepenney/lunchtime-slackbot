@@ -61,6 +61,23 @@ function getChoices(next){
   });
 }
 
+function getLastRoundStats(next){
+  pg.connect(cfg, function(err, client, done) {
+    if(err) { done(); return next(err); }
+    getCurrentRoundInternal(client, function(err, round){
+      if(err) {
+        done();
+        return next(err);
+      }
+      var query = 'select count(v.id) as votes, c.name as choice from vote v join choice c on v.choice_id = c.id where v.round_id = $1 group by c.name';
+      client.query({text: query, values: [round.id]}, function(err, result) {
+        next(err, result != null ? result.rows : []);
+        done();
+      });
+    })
+  });
+}
+
 function makeVote(user, choice, next){
   pg.connect(cfg, function(err, client, done) {
     if(err) { done(); return next(err); }
@@ -74,7 +91,6 @@ function makeVote(user, choice, next){
       var insertVote = 'insert into vote(round_id, choice_id, user_id) values($1, $2, $3)\n '+
                        'on conflict on constraint vote_round_id_user_id_key do update set choice_id = $2';
       var values = [current_round.id, choice.id, user.id];
-      console.log(values);
       client.query({text: insertVote, values: values}, function(err, result){
         next(err);
         done();
@@ -88,5 +104,6 @@ module.exports = {
   saveToken: saveToken,
   getChoices: getChoices,
   makeVote: makeVote,
-  getCurrentRound: getCurrentRound
+  getCurrentRound: getCurrentRound,
+  getLastRoundStats: getLastRoundStats
 };

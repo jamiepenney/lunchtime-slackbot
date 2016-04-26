@@ -2,6 +2,7 @@ var SlackClient = require('slack-client');
 var config = require('./config')
 var token = require('./conversations/token');
 var vote = require('./conversations/vote');
+var stats = require('./conversations/stats');
 var db = require('./db');
 var request = require('request');
 
@@ -116,6 +117,20 @@ controller.hears(["vote"],["direct_message"],function(bot,message) {
   })
 });
 
+
+
+//////////////////////
+/// Stats response ///
+//////////////////////
+
+controller.hears(["stats", "vote for last week"],["direct_mention", "mention", "direct_message"],function(bot,message) {
+  getUser(message.user, function(err, user){
+    if(err){
+      return;
+    }
+    stats.conversation(bot, user, message, true);
+  })
+});
 
 ///////////////////////
 /// Hungry response ///
